@@ -1,0 +1,46 @@
+{
+  "pes_results": [
+    {
+      "r": 0.5,
+      "vqe_energy": -38.71665127486338,
+      "fci_energy": -38.75281097268823,
+      "error_mha": 36.15969782484996,
+      "runtime": 8530.854,
+      "n_evals": 2231
+    },
+    {
+      "r": 0.6,
+      "vqe_energy": -39.20999105924527,
+      "fci_energy": -39.24680218367846,
+      "error_mha": 36.81112443319279,
+      "runtime": 16986.306,
+      "n_evals": 4462
+    }
+  ],
+  "experiment": {
+    "molecule": "CH4",
+    "basis": "sto-3g",
+    "charge": "0",
+    "multiplicity": "1",
+    "freeze_core": "True",
+    "use_active_space": "True",
+    "active_electrons": "8",
+    "active_orbitals": "8",
+    "mapper": "bravyi-kitaev",
+    "ansatz": "k-upccgsd",
+    "reps": "1",
+    "k": "2",
+    "optimizer": "l_bfgs_b",
+    "maxiter": "1000",
+    "tol": "1e-07",
+    "initial_point": "mp2",
+    "noise": "False",
+    "shots": "2048",
+    "seed": "123",
+    "scan_type": "single_ch",
+    "r_min": "0.5",
+    "r_max": "2.5",
+    "r_npoints": "21",
+    "warm_start": "True"
+  }
+}

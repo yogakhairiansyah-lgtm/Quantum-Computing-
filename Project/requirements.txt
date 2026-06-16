@@ -1,0 +1,39 @@
+# ============================================================
+# VQE Benchmark Framework — Python Dependencies
+# Python >= 3.11 required
+# ============================================================
+
+# ── Core Qiskit stack ────────────────────────────────────────────────────────
+qiskit>=2.3.0                   # Core Qiskit (circuits, primitives, transpiler)
+qiskit-nature>=0.7.2            # Second-quantization, PySCF driver, UCC ansatze
+qiskit-algorithms>=0.3.0        # VQE, AdaptVQE, NumPyMinimumEigensolver
+qiskit-aer>=0.14.0              # Noisy simulation via AerEstimatorV2
+
+# ── Classical chemistry backend ──────────────────────────────────────────────
+pyscf>=2.4.0                    # Required by qiskit-nature's PySCFDriver
+
+# ── Scientific Python ────────────────────────────────────────────────────────
+numpy>=1.24.0
+scipy>=1.11.0
+pandas>=2.0.0
+matplotlib>=3.7.0
+
+# ── Jupyter environment ───────────────────────────────────────────────────────
+jupyter>=1.0.0
+notebook>=7.0.0
+ipykernel>=6.25.0
+ipywidgets>=8.0.0
+
+# ── Optional: IBM fake-backend noise models ──────────────────────────────────
+# Uncomment to enable hardware-realistic noisy simulation:
+# qiskit-ibm-runtime>=0.23.0   # Provides FakeSherbrooke and other fake backends
+# Usage in notebook:
+#   from qiskit_ibm_runtime.fake_provider import FakeSherbrooke
+#   from qiskit_aer.noise import NoiseModel
+#   nm = NoiseModel.from_backend(FakeSherbrooke())
+#   estimator = get_estimator(noisy=True, noise_model=nm)
+
+# ── Development / testing ─────────────────────────────────────────────────────
+# pytest>=7.4.0
+# black>=23.0.0
+# mypy>=1.5.0

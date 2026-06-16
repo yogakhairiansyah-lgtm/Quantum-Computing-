@@ -1,0 +1,134 @@
+{
+  "pes_results": [
+    {
+      "r": 0.8,
+      "vqe_energy": -1.1341476666203827,
+      "fci_energy": -1.1341476666770944,
+      "error_mha": 5.671174641008747e-08,
+      "runtime": 0.239,
+      "n_evals": 10
+    },
+    {
+      "r": 0.9,
+      "vqe_energy": -1.1205602812968578,
+      "fci_energy": -1.1205602812999864,
+      "error_mha": 3.128608483393691e-09,
+      "runtime": 0.184,
+      "n_evals": 9
+    },
+    {
+      "r": 1.0,
+      "vqe_energy": -1.1011503302323178,
+      "fci_energy": -1.1011503302326193,
+      "error_mha": 3.015365734881925e-10,
+      "runtime": 0.173,
+      "n_evals": 9
+    },
+    {
+      "r": 1.1,
+      "vqe_energy": -1.0791929449690736,
+      "fci_energy": -1.0791929449690718,
+      "error_mha": 1.7763568394002505e-12,
+      "runtime": 0.189,
+      "n_evals": 9
+    },
+    {
+      "r": 1.2,
+      "vqe_energy": -1.0567407463050222,
+      "fci_energy": -1.056740746305258,
+      "error_mha": 2.3581137043038325e-10,
+      "runtime": 0.188,
+      "n_evals": 9
+    },
+    {
+      "r": 1.3,
+      "vqe_energy": -1.0351862663750468,
+      "fci_energy": -1.0351862664342542,
+      "error_mha": 5.92073057248399e-08,
+      "runtime": 0.242,
+      "n_evals": 12
+    },
+    {
+      "r": 1.4,
+      "vqe_energy": -1.015468249189948,
+      "fci_energy": -1.0154682492882459,
+      "error_mha": 9.829781433268181e-08,
+      "runtime": 0.232,
+      "n_evals": 12
+    },
+    {
+      "r": 1.5,
+      "vqe_energy": -0.9981493533630571,
+      "fci_energy": -0.998149353471409,
+      "error_mha": 1.0835188302138477e-07,
+      "runtime": 0.219,
+      "n_evals": 12
+    },
+    {
+      "r": 1.6,
+      "vqe_energy": -0.9834727289441424,
+      "fci_energy": -0.9834727290331724,
+      "error_mha": 8.903000559001839e-08,
+      "runtime": 0.227,
+      "n_evals": 12
+    },
+    {
+      "r": 1.7,
+      "vqe_energy": -0.9714266883999821,
+      "fci_energy": -0.9714266884583403,
+      "error_mha": 5.835820715560658e-08,
+      "runtime": 0.215,
+      "n_evals": 12
+    },
+    {
+      "r": 1.7999999999999998,
+      "vqe_energy": -0.961816952760052,
+      "fci_energy": -0.9618169527925811,
+      "error_mha": 3.2529090532307237e-08,
+      "runtime": 0.258,
+      "n_evals": 12
+    },
+    {
+      "r": 1.9,
+      "vqe_energy": -0.9543388539825548,
+      "fci_energy": -0.9543388539987272,
+      "error_mha": 1.617239675510973e-08,
+      "runtime": 0.237,
+      "n_evals": 12
+    },
+    {
+      "r": 2.0,
+      "vqe_energy": -0.9486411121685208,
+      "fci_energy": -0.9486411121761863,
+      "error_mha": 7.665534873524393e-09,
+      "runtime": 0.253,
+      "n_evals": 12
+    }
+  ],
+  "experiment": {
+    "molecule": "H2",
+    "basis": "sto-3g",
+    "charge": "0",
+    "multiplicity": "1",
+    "freeze_core": "False",
+    "use_active_space": "False",
+    "active_electrons": "8",
+    "active_orbitals": "8",
+    "mapper": "parity",
+    "ansatz": "k-upccgsd",
+    "reps": "1",
+    "k": "1",
+    "optimizer": "slsqp",
+    "maxiter": "500",
+    "tol": "1e-06",
+    "initial_point": "hf",
+    "noise": "False",
+    "shots": "2048",
+    "seed": "123",
+    "scan_type": "single_ch",
+    "r_min": "0.8",
+    "r_max": "2.0",
+    "r_npoints": "13",
+    "warm_start": "True"
+  }
+}

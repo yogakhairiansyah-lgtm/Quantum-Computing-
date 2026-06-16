@@ -1,0 +1,198 @@
+{
+  "pes_results": [
+    {
+      "r": 0.5,
+      "vqe_energy": -73.13372518868836,
+      "fci_energy": -73.13755703001564,
+      "error_mha": 3.831841327283314,
+      "runtime": 13.346,
+      "n_evals": 131
+    },
+    {
+      "r": 0.6,
+      "vqe_energy": -74.13955786828132,
+      "fci_energy": -74.14610165659295,
+      "error_mha": 6.543788311631715,
+      "runtime": 8.077,
+      "n_evals": 79
+    },
+    {
+      "r": 0.7,
+      "vqe_energy": -74.63348611500959,
+      "fci_energy": -74.64358629634975,
+      "error_mha": 10.100181340163772,
+      "runtime": 8.062,
+      "n_evals": 79
+    },
+    {
+      "r": 0.8,
+      "vqe_energy": -74.86822407359077,
+      "fci_energy": -74.88290289178447,
+      "error_mha": 14.678818193701204,
+      "runtime": 10.735,
+      "n_evals": 105
+    },
+    {
+      "r": 0.9,
+      "vqe_energy": -74.96715425464778,
+      "fci_energy": -74.9876011738557,
+      "error_mha": 20.446919207913083,
+      "runtime": 14.131,
+      "n_evals": 129
+    },
+    {
+      "r": 1.0,
+      "vqe_energy": -74.99233151526367,
+      "fci_energy": -75.01977007994358,
+      "error_mha": 27.438564679911792,
+      "runtime": 15.598,
+      "n_evals": 155
+    },
+    {
+      "r": 1.1,
+      "vqe_energy": -74.97698249690538,
+      "fci_energy": -75.01254700399174,
+      "error_mha": 35.56450708636305,
+      "runtime": 15.731,
+      "n_evals": 155
+    },
+    {
+      "r": 1.2000000000000002,
+      "vqe_energy": -74.94035092603991,
+      "fci_energy": -74.98505620098564,
+      "error_mha": 44.70527494572707,
+      "runtime": 15.634,
+      "n_evals": 153
+    },
+    {
+      "r": 1.3,
+      "vqe_energy": -74.89391255654795,
+      "fci_energy": -74.94871721403929,
+      "error_mha": 54.804657491345665,
+      "runtime": 15.838,
+      "n_evals": 155
+    },
+    {
+      "r": 1.4,
+      "vqe_energy": -74.84432830197144,
+      "fci_energy": -74.91021772992814,
+      "error_mha": 65.88942795669084,
+      "runtime": 22.929,
+      "n_evals": 228
+    },
+    {
+      "r": 1.5,
+      "vqe_energy": -74.79538676125864,
+      "fci_energy": -74.87339074039177,
+      "error_mha": 78.00397913312906,
+      "runtime": 18.191,
+      "n_evals": 179
+    },
+    {
+      "r": 1.6,
+      "vqe_energy": -74.74937415183571,
+      "fci_energy": -74.84045825229737,
+      "error_mha": 91.08410046165716,
+      "runtime": 22.85,
+      "n_evals": 227
+    },
+    {
+      "r": 1.7000000000000002,
+      "vqe_energy": -74.70785100920793,
+      "fci_energy": -74.81267617210015,
+      "error_mha": 104.82516289222588,
+      "runtime": 18.148,
+      "n_evals": 178
+    },
+    {
+      "r": 1.8,
+      "vqe_energy": -74.67189711936534,
+      "fci_energy": -74.79054856211349,
+      "error_mha": 118.65144274814554,
+      "runtime": 17.936,
+      "n_evals": 178
+    },
+    {
+      "r": 1.9000000000000001,
+      "vqe_energy": -74.7476418732935,
+      "fci_energy": -74.77389225244106,
+      "error_mha": 26.250379147555236,
+      "runtime": 58.502,
+      "n_evals": 580
+    },
+    {
+      "r": 2.0,
+      "vqe_energy": -74.70156930569502,
+      "fci_energy": -74.76197634810741,
+      "error_mha": 60.40704241239325,
+      "runtime": 40.371,
+      "n_evals": 400
+    },
+    {
+      "r": 2.1,
+      "vqe_energy": -74.74194323113313,
+      "fci_energy": -74.75378220682552,
+      "error_mha": 11.838975692384679,
+      "runtime": 45.586,
+      "n_evals": 451
+    },
+    {
+      "r": 2.2,
+      "vqe_energy": -74.74049410546746,
+      "fci_energy": -74.74828447813981,
+      "error_mha": 7.79037267234628,
+      "runtime": 22.999,
+      "n_evals": 227
+    },
+    {
+      "r": 2.3,
+      "vqe_energy": -74.73952083819347,
+      "fci_energy": -74.74463373663045,
+      "error_mha": 5.1128984369768204,
+      "runtime": 25.668,
+      "n_evals": 253
+    },
+    {
+      "r": 2.4000000000000004,
+      "vqe_energy": -74.73884747609586,
+      "fci_energy": -74.7422100775531,
+      "error_mha": 3.362601457240544,
+      "runtime": 10.373,
+      "n_evals": 102
+    },
+    {
+      "r": 2.5,
+      "vqe_energy": -74.69130250919436,
+      "fci_energy": -74.74059450455468,
+      "error_mha": 49.291995360320584,
+      "runtime": 126.256,
+      "n_evals": 1256
+    }
+  ],
+  "experiment": {
+    "molecule": "H2O",
+    "basis": "sto-3g",
+    "charge": "0",
+    "multiplicity": "1",
+    "freeze_core": "True",
+    "use_active_space": "False",
+    "active_electrons": "8",
+    "active_orbitals": "6",
+    "mapper": "parity",
+    "ansatz": "k-upccgsd",
+    "reps": "1",
+    "k": "1",
+    "optimizer": "slsqp",
+    "maxiter": "500",
+    "tol": "1e-06",
+    "initial_point": "hf",
+    "noise": "False",
+    "shots": "2048",
+    "seed": "123",
+    "scan_type": "single_ch",
+    "r_min": "0.5",
+    "r_max": "2.5",
+    "r_npoints": "21",
+    "warm_start": "True"
+  }
+}

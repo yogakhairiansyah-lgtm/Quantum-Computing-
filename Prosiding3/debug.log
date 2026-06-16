@@ -1,0 +1,903 @@
+[NbConvertApp] Searching ['/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/etc/jupyter', '/mgpfs/home/mkhairiansyah/.jupyter', '/mgpfs/home/mkhairiansyah/.local/etc/jupyter', '/usr/local/etc/jupyter', '/etc/jupyter'] for config files
+[NbConvertApp] Looking for jupyter_config in /etc/jupyter
+[NbConvertApp] Looking for jupyter_config in /usr/local/etc/jupyter
+[NbConvertApp] Looking for jupyter_config in /mgpfs/home/mkhairiansyah/.local/etc/jupyter
+[NbConvertApp] Looking for jupyter_config in /mgpfs/home/mkhairiansyah/.jupyter
+[NbConvertApp] Looking for jupyter_config in /mgpfs/home/mkhairiansyah/.conda/envs/env-ml/etc/jupyter
+[NbConvertApp] Looking for jupyter_nbconvert_config in /etc/jupyter
+[NbConvertApp] Looking for jupyter_nbconvert_config in /usr/local/etc/jupyter
+[NbConvertApp] Looking for jupyter_nbconvert_config in /mgpfs/home/mkhairiansyah/.local/etc/jupyter
+[NbConvertApp] Looking for jupyter_nbconvert_config in /mgpfs/home/mkhairiansyah/.jupyter
+[NbConvertApp] Looking for jupyter_nbconvert_config in /mgpfs/home/mkhairiansyah/.conda/envs/env-ml/etc/jupyter
+[NbConvertApp] Looping through config variables with prefix "JUPYTER_NBCONVERT"
+[NbConvertApp] Converting notebook CH4_VQE_kupccsd.ipynb to notebook
+[NbConvertApp] Notebook name is 'CH4_VQE_kupccsd'
+/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/lib/python3.10/site-packages/nbformat/__init__.py:96: MissingIDFieldWarning: Cell is missing an id field, this will become a hard error in future nbformat versions. You may want to use `normalize()` on your notebooks before validations (available since nbformat 5.1.4). Previous versions of nbformat are fixing this issue transparently, and will stop doing so in the future.
+  validate(nb)
+[NbConvertApp] Applying preprocessor: ExecutePreprocessor
+[NbConvertApp] Instantiating kernel 'python (env-ml HPC)' with kernel provisioner: local-provisioner
+[NbConvertApp] Starting kernel: ['/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/bin/python', '-m', 'ipykernel_launcher', '-f', '/tmp/tmpf7dyy2at.json']
+[NbConvertApp] Connecting to: tcp://127.0.0.1:39939
+[NbConvertApp] connecting iopub channel to tcp://127.0.0.1:47211
+[NbConvertApp] Connecting to: tcp://127.0.0.1:47211
+[NbConvertApp] connecting shell channel to tcp://127.0.0.1:42865
+[NbConvertApp] Connecting to: tcp://127.0.0.1:42865
+[NbConvertApp] connecting stdin channel to tcp://127.0.0.1:45727
+[NbConvertApp] Connecting to: tcp://127.0.0.1:45727
+[NbConvertApp] connecting heartbeat channel to tcp://127.0.0.1:35673
+[NbConvertApp] connecting control channel to tcp://127.0.0.1:39939
+[NbConvertApp] Connecting to: tcp://127.0.0.1:39939
+[NbConvertApp] Executing cell:
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+from scipy.optimize import minimize
+from scipy.linalg import expm
+import time
+import warnings
+warnings.filterwarnings('ignore')
+ 
+from pyscf import gto, scf, ao2mo, mcscf
+from openfermion import (FermionOperator, normal_ordered, jordan_wigner,
+                         get_sparse_operator, count_qubits)
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': "import numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\nimport matplotlib.gridspec as gridspec\nfrom scipy.optimize import minimize\nfrom scipy.linalg import expm\nimport time\nimport warnings\nwarnings.filterwarnings('ignore')\n \nfrom pyscf import gto, scf, ao2mo, mcscf\nfrom openfermion import (FermionOperator, normal_ordered, jordan_wigner,\n                         get_sparse_operator, count_qubits)", 'execution_count': 1}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Skipping non-executing cell 1
+[NbConvertApp] Executing cell:
+ACTIVE_MOLECULE = 'CH4'
+ANSATZ_TYPE     = 'k-UpCCGSD'
+K_LAYERS        = 2
+USE_SCBK        = True
+
+MOLECULES = {
+    'H2': {
+        'description'  : 'Molekul hidrogen H2, basis STO-3G',
+        'atom'         : lambda R: f'H 0 0 0; H 0 0 {R}',
+        'basis'        : 'sto-3g',
+        'charge'       : 0,
+        'spin'         : 0,
+        'n_electrons'  : 2,
+        'n_frozen_core': 0,
+        'n_active_orbs': 2,
+        'bond_lengths' : np.array([0.5, 0.6, 0.7, 0.74, 0.8,
+                                    0.9, 1.0, 1.2, 1.5, 2.0]),
+    },
+    'H2O': {
+        'description'  : 'Molekul air H2O, basis STO-3G, active space CAS(4e,4o)',
+        'atom'         : None,
+        'basis'        : 'sto-3g',
+        'charge'       : 0,
+        'spin'         : 0,
+        'n_electrons'  : 10,
+        'n_frozen_core': 3,
+        'n_active_orbs': 4,
+        'bond_lengths' : None,
+    },
+    'CH4': {
+        'description'  : 'Molekul metan CH4, basis STO-3G, active space CAS(8e,8o)',
+        'atom'         : None,   # diisi di bawah
+        'basis'        : 'sto-3g',
+        'charge'       : 0,
+        'spin'         : 0,
+        'n_electrons'  : 10,
+        'n_frozen_core': 1,      # C 1s core di-freeze
+        'n_active_orbs': 8,      # 8 orbital aktif (NOON: 0.02<NOON<1.98, CAS(8,8))
+        'bond_lengths' : None,   # diisi di bawah
+    },
+}
+
+# ─── H2O geometry (dipertahankan untuk referensi) ──────────────────────
+def h2o_geometry(R_OH=0.96, theta_deg=104.45):
+    theta = np.radians(theta_deg / 2)
+    x = R_OH * np.sin(theta)
+    z = R_OH * np.cos(theta)
+    return (f'O  0.000  0.000  0.000;'
+            f'H  0.000  {x:.6f}  {z:.6f};'
+            f'H  0.000 {-x:.6f}  {z:.6f}')
+
+# ─── CH4 geometry: tetrahedral, parameter = panjang ikatan C-H ─────────
+def ch4_geometry(R_CH=1.085):
+    # Simpul tetrahedron: (±1,±1,±1)/sqrt(3)*R_CH, tanda genap +
+    # Menjamin sudut H-C-H = arccos(-1/3) = 109.47 deg
+    d = R_CH / np.sqrt(3)
+    return (
+        f'C   0.000000  0.000000  0.000000;'
+        f'H   {d:.6f}  {d:.6f}  {d:.6f};'
+        f'H   {d:.6f} {-d:.6f} {-d:.6f};'
+        f'H  {-d:.6f}  {d:.6f} {-d:.6f};'
+        f'H  {-d:.6f} {-d:.6f}  {d:.6f}'
+    )
+
+MOLECULES['H2O']['atom']         = h2o_geometry
+MOLECULES['H2O']['bond_lengths'] = np.array([
+    0.70, 0.80, 0.90, 0.96, 1.09, 1.20, 1.40, 1.60, 1.80, 2.00
+])
+
+MOLECULES['CH4']['atom']         = ch4_geometry
+MOLECULES['CH4']['bond_lengths'] = np.array([
+    0.70, 0.80, 0.90, 1.00, 1.085, 1.10,
+    1.20, 1.40, 1.60, 1.80, 2.00, 2.50, 3.00
+])
+
+mol_cfg = MOLECULES[ACTIVE_MOLECULE]
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': "ACTIVE_MOLECULE = 'CH4'\nANSATZ_TYPE     = 'k-UpCCGSD'\nK_LAYERS        = 2\nUSE_SCBK        = True\n\nMOLECULES = {\n    'H2': {\n        'description'  : 'Molekul hidrogen H2, basis STO-3G',\n        'atom'         : lambda R: f'H 0 0 0; H 0 0 {R}',\n        'basis'        : 'sto-3g',\n        'charge'       : 0,\n        'spin'         : 0,\n        'n_electrons'  : 2,\n        'n_frozen_core': 0,\n        'n_active_orbs': 2,\n        'bond_lengths' : np.array([0.5, 0.6, 0.7, 0.74, 0.8,\n                                    0.9, 1.0, 1.2, 1.5, 2.0]),\n    },\n    'H2O': {\n        'description'  : 'Molekul air H2O, basis STO-3G, active space CAS(4e,4o)',\n        'atom'         : None,\n        'basis'        : 'sto-3g',\n        'charge'       : 0,\n        'spin'         : 0,\n        'n_electrons'  : 10,\n        'n_frozen_core': 3,\n        'n_active_orbs': 4,\n        'bond_lengths' : None,\n    },\n    'CH4': {\n        'description'  : 'Molekul metan CH4, basis STO-3G, active space CAS(8e,8o)',\n        'atom'         : None,   # diisi di bawah\n        'basis'        : 'sto-3g',\n        'charge'       : 0,\n        'spin'         : 0,\n        'n_electrons'  : 10,\n        'n_frozen_core': 1,      # C 1s core di-freeze\n        'n_active_orbs': 8,      # 8 orbital aktif (NOON: 0.02<NOON<1.98, CAS(8,8))\n        'bond_lengths' : None,   # diisi di bawah\n    },\n}\n\n# ─── H2O geometry (dipertahankan untuk referensi) ──────────────────────\ndef h2o_geometry(R_OH=0.96, theta_deg=104.45):\n    theta = np.radians(theta_deg / 2)\n    x = R_OH * np.sin(theta)\n    z = R_OH * np.cos(theta)\n    return (f'O  0.000  0.000  0.000;'\n            f'H  0.000  {x:.6f}  {z:.6f};'\n            f'H  0.000 {-x:.6f}  {z:.6f}')\n\n# ─── CH4 geometry: tetrahedral, parameter = panjang ikatan C-H ─────────\ndef ch4_geometry(R_CH=1.085):\n    # Simpul tetrahedron: (±1,±1,±1)/sqrt(3)*R_CH, tanda genap +\n    # Menjamin sudut H-C-H = arccos(-1/3) = 109.47 deg\n    d = R_CH / np.sqrt(3)\n    return (\n        f'C   0.000000  0.000000  0.000000;'\n        f'H   {d:.6f}  {d:.6f}  {d:.6f};'\n        f'H   {d:.6f} {-d:.6f} {-d:.6f};'\n        f'H  {-d:.6f}  {d:.6f} {-d:.6f};'\n        f'H  {-d:.6f} {-d:.6f}  {d:.6f}'\n    )\n\nMOLECULES['H2O']['atom']         = h2o_geometry\nMOLECULES['H2O']['bond_lengths'] = np.array([\n    0.70, 0.80, 0.90, 0.96, 1.09, 1.20, 1.40, 1.60, 1.80, 2.00\n])\n\nMOLECULES['CH4']['atom']         = ch4_geometry\nMOLECULES['CH4']['bond_lengths'] = np.array([\n    0.70, 0.80, 0.90, 1.00, 1.085, 1.10,\n    1.20, 1.40, 1.60, 1.80, 2.00, 2.50, 3.00\n])\n\nmol_cfg = MOLECULES[ACTIVE_MOLECULE]", 'execution_count': 2}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Skipping non-executing cell 3
+[NbConvertApp] Executing cell:
+def build_one_electron(integral, n_orb):
+    H = FermionOperator()
+    for p in range(n_orb):
+        for q in range(n_orb):
+            if abs(integral[p, q]) < 1e-12:
+                continue
+            for sigma in range(2):
+                i = 2 * p + sigma
+                j = 2 * q + sigma
+                H += FermionOperator(((i, 1), (j, 0)), integral[p, q])
+    return H
+
+def build_two_electron(eri_mo, n_orb):
+    H = FermionOperator()
+    for p in range(n_orb):
+        for q in range(n_orb):
+            for r in range(n_orb):
+                for s in range(n_orb):
+                    g = eri_mo[p, q, r, s]
+                    if abs(g) < 1e-12:
+                        continue
+                    for sigma in range(2):
+                        for tau in range(2):
+                            i = 2 * p + sigma
+                            j = 2 * r + tau
+                            k = 2 * s + tau
+                            l = 2 * q + sigma
+                            H += FermionOperator(
+                                ((i, 1), (j, 1), (k, 0), (l, 0)),
+                                0.5 * g
+                            )
+    return H
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'def build_one_electron(integral, n_orb):\n    H = FermionOperator()\n    for p in range(n_orb):\n        for q in range(n_orb):\n            if abs(integral[p, q]) < 1e-12:\n                continue\n            for sigma in range(2):\n                i = 2 * p + sigma\n                j = 2 * q + sigma\n                H += FermionOperator(((i, 1), (j, 0)), integral[p, q])\n    return H\n\ndef build_two_electron(eri_mo, n_orb):\n    H = FermionOperator()\n    for p in range(n_orb):\n        for q in range(n_orb):\n            for r in range(n_orb):\n                for s in range(n_orb):\n                    g = eri_mo[p, q, r, s]\n                    if abs(g) < 1e-12:\n                        continue\n                    for sigma in range(2):\n                        for tau in range(2):\n                            i = 2 * p + sigma\n                            j = 2 * r + tau\n                            k = 2 * s + tau\n                            l = 2 * q + sigma\n                            H += FermionOperator(\n                                ((i, 1), (j, 1), (k, 0), (l, 0)),\n                                0.5 * g\n                            )\n    return H', 'execution_count': 3}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Executing cell:
+def compute_scbk_isometry(H_jw_mat, H_scbk_mat, n_active_e, n_q_jw):
+    '''
+    Bangun isometri U: C^dim_scbk -> C^dim_jw
+    dengan cara memilih eigenvector JW yang eigenvalue-nya cocok
+    dengan eigenvalue SCBK (sektor N-elektron).
+    '''
+    evals_jw, evecs_jw = np.linalg.eigh(H_jw_mat)
+    evals_sc, evecs_sc = np.linalg.eigh(H_scbk_mat)
+
+    tol = 1e-5
+    selected_cols = []
+    for e_sc in evals_sc:
+        diffs = np.abs(evals_jw - e_sc)
+        idx   = int(np.argmin(diffs))
+        selected_cols.append(idx)
+
+    dim_jw   = H_jw_mat.shape[0]
+    dim_scbk = H_scbk_mat.shape[0]
+    U = evecs_jw[:, selected_cols]   # shape: (dim_jw, dim_scbk)
+    assert U.shape == (dim_jw, dim_scbk), f"Shape U salah: {U.shape}"
+
+    H_check = U.T.conj() @ H_jw_mat @ U
+    err = np.max(np.abs(H_check - H_scbk_mat))
+    if err > 1e-4:
+        print(f"  [WARN] Isometri tidak sempurna: max|H_check - H_scbk| = {err:.2e}")
+    else:
+        print(f"  [OK] Isometri valid: max error = {err:.2e}")
+    return U
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'def compute_scbk_isometry(H_jw_mat, H_scbk_mat, n_active_e, n_q_jw):\n    \'\'\'\n    Bangun isometri U: C^dim_scbk -> C^dim_jw\n    dengan cara memilih eigenvector JW yang eigenvalue-nya cocok\n    dengan eigenvalue SCBK (sektor N-elektron).\n    \'\'\'\n    evals_jw, evecs_jw = np.linalg.eigh(H_jw_mat)\n    evals_sc, evecs_sc = np.linalg.eigh(H_scbk_mat)\n\n    tol = 1e-5\n    selected_cols = []\n    for e_sc in evals_sc:\n        diffs = np.abs(evals_jw - e_sc)\n        idx   = int(np.argmin(diffs))\n        selected_cols.append(idx)\n\n    dim_jw   = H_jw_mat.shape[0]\n    dim_scbk = H_scbk_mat.shape[0]\n    U = evecs_jw[:, selected_cols]   # shape: (dim_jw, dim_scbk)\n    assert U.shape == (dim_jw, dim_scbk), f"Shape U salah: {U.shape}"\n\n    H_check = U.T.conj() @ H_jw_mat @ U\n    err = np.max(np.abs(H_check - H_scbk_mat))\n    if err > 1e-4:\n        print(f"  [WARN] Isometri tidak sempurna: max|H_check - H_scbk| = {err:.2e}")\n    else:\n        print(f"  [OK] Isometri valid: max error = {err:.2e}")\n    return U', 'execution_count': 4}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Executing cell:
+def build_hamiltonian_v2(mol_cfg, bond_length=None, use_scbk=False):
+    '''
+    Returns: H_mat, T_mat, V_mat, E_core, n_q, n_orb, n_active_e,
+             n_spin_orbs, n_q_jw, U_scbk, E_hf_mf, H_jw
+    H_mat sudah termasuk E_core (energi repulsi inti / frozen core).
+    '''
+    mol = gto.Mole()
+    atom_fn    = mol_cfg['atom']
+    mol.atom   = atom_fn(bond_length) if bond_length is not None else atom_fn()
+    mol.basis  = mol_cfg['basis']
+    mol.charge = mol_cfg['charge']
+    mol.spin   = mol_cfg['spin']
+    mol.verbose = 0
+    mol.build()
+
+    mf = scf.RHF(mol)
+    mf.run()
+    E_hf_mf    = mf.e_tot
+    n_frozen   = mol_cfg['n_frozen_core']
+    n_active   = mol_cfg['n_active_orbs']
+    n_elec_tot = mol_cfg['n_electrons']
+
+    n_active_e = n_elec_tot - 2 * n_frozen
+    if n_active_e <= 0:
+        raise ValueError(f"n_active_e={n_active_e} tidak valid. "
+                         f"Cek n_frozen_core={n_frozen} vs n_electrons={n_elec_tot}.")
+    if n_active_e % 2 != mol_cfg.get('spin', 0) % 2:
+        raise ValueError(f"n_active_e={n_active_e} tidak konsisten dengan spin.")
+
+    if n_frozen > 0 or n_active is not None:
+        n_act = n_active if n_active is not None else mol.nao_nr() - n_frozen
+        if n_active_e > 2 * n_act:
+            raise ValueError(f"Elektron aktif ({n_active_e}) melebihi kapasitas "
+                             f"2*n_act={2*n_act}. Perbesar n_active_orbs.")
+
+        cas   = mcscf.CASCI(mf, n_act, n_active_e)
+        cas.verbose = 0
+        h1, E_core = cas.get_h1eff()
+        h2_cas     = cas.get_h2eff()
+        h2         = ao2mo.restore(1, h2_cas, n_act).reshape(n_act, n_act, n_act, n_act)
+        n_orb      = n_act
+
+        T_ferm = normal_ordered(build_one_electron(h1, n_orb))
+        V_ferm = normal_ordered(build_two_electron(h2, n_orb))
+        H_active = T_ferm + V_ferm
+        n_spin_orbs = 2 * n_orb
+        H_ferm = H_active + FermionOperator((), E_core)
+        T_ferm_nocore = T_ferm
+        V_ferm_nocore = V_ferm
+    else:
+        C      = mf.mo_coeff
+        n_orb  = C.shape[1]
+        n_active_e = n_elec_tot
+        E_core = mol.energy_nuc()
+        T_ao   = mol.intor('int1e_kin')
+        V_ao   = mol.intor('int1e_nuc')
+        T_mo   = C.T @ T_ao @ C
+        V_mo   = C.T @ V_ao @ C
+        eri_mo = ao2mo.kernel(mol, C, compact=False).reshape(n_orb, n_orb, n_orb, n_orb)
+        T_ferm = normal_ordered(build_one_electron(T_mo, n_orb) +
+                                build_one_electron(V_mo, n_orb))
+        V_ferm = normal_ordered(build_two_electron(eri_mo, n_orb))
+        H_ferm = T_ferm + V_ferm + FermionOperator((), E_core)
+        T_ferm_nocore = T_ferm
+        V_ferm_nocore = V_ferm
+
+    n_spin_orbs = 2 * n_orb
+    H_q_jw = jordan_wigner(H_ferm)
+    T_q_jw = jordan_wigner(T_ferm)
+    V_q_jw = jordan_wigner(V_ferm)
+    n_q_jw = count_qubits(H_q_jw)
+    H_jw   = get_sparse_operator(H_q_jw, n_qubits=n_q_jw).toarray()
+    T_jw   = get_sparse_operator(T_q_jw, n_qubits=n_q_jw).toarray()
+    V_jw   = get_sparse_operator(V_q_jw, n_qubits=n_q_jw).toarray()
+
+    if use_scbk:
+        from openfermion.transforms import symmetry_conserving_bravyi_kitaev
+        H_q_sc = symmetry_conserving_bravyi_kitaev(H_ferm, n_spin_orbs, n_active_e)
+        Tq_sc  = symmetry_conserving_bravyi_kitaev(T_ferm_nocore, n_spin_orbs, n_active_e)
+        Vq_sc  = symmetry_conserving_bravyi_kitaev(V_ferm_nocore, n_spin_orbs, n_active_e)
+        n_q    = count_qubits(H_q_sc)
+        H_mat  = get_sparse_operator(H_q_sc, n_qubits=n_q).toarray()
+        T_mat  = get_sparse_operator(Tq_sc,  n_qubits=n_q).toarray()
+        V_mat  = get_sparse_operator(Vq_sc,  n_qubits=n_q).toarray()
+        U_scbk = compute_scbk_isometry(H_jw, H_mat, n_active_e, n_q_jw)
+    else:
+        n_q    = n_q_jw
+        H_mat  = H_jw
+        T_mat  = T_jw
+        V_mat  = V_jw
+        U_scbk = None
+
+    return (H_mat, T_mat, V_mat, E_core, n_q, n_orb, n_active_e,
+            n_spin_orbs, n_q_jw, U_scbk, E_hf_mf, H_jw)
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'def build_hamiltonian_v2(mol_cfg, bond_length=None, use_scbk=False):\n    \'\'\'\n    Returns: H_mat, T_mat, V_mat, E_core, n_q, n_orb, n_active_e,\n             n_spin_orbs, n_q_jw, U_scbk, E_hf_mf, H_jw\n    H_mat sudah termasuk E_core (energi repulsi inti / frozen core).\n    \'\'\'\n    mol = gto.Mole()\n    atom_fn    = mol_cfg[\'atom\']\n    mol.atom   = atom_fn(bond_length) if bond_length is not None else atom_fn()\n    mol.basis  = mol_cfg[\'basis\']\n    mol.charge = mol_cfg[\'charge\']\n    mol.spin   = mol_cfg[\'spin\']\n    mol.verbose = 0\n    mol.build()\n\n    mf = scf.RHF(mol)\n    mf.run()\n    E_hf_mf    = mf.e_tot\n    n_frozen   = mol_cfg[\'n_frozen_core\']\n    n_active   = mol_cfg[\'n_active_orbs\']\n    n_elec_tot = mol_cfg[\'n_electrons\']\n\n    n_active_e = n_elec_tot - 2 * n_frozen\n    if n_active_e <= 0:\n        raise ValueError(f"n_active_e={n_active_e} tidak valid. "\n                         f"Cek n_frozen_core={n_frozen} vs n_electrons={n_elec_tot}.")\n    if n_active_e % 2 != mol_cfg.get(\'spin\', 0) % 2:\n        raise ValueError(f"n_active_e={n_active_e} tidak konsisten dengan spin.")\n\n    if n_frozen > 0 or n_active is not None:\n        n_act = n_active if n_active is not None else mol.nao_nr() - n_frozen\n        if n_active_e > 2 * n_act:\n            raise ValueError(f"Elektron aktif ({n_active_e}) melebihi kapasitas "\n                             f"2*n_act={2*n_act}. Perbesar n_active_orbs.")\n\n        cas   = mcscf.CASCI(mf, n_act, n_active_e)\n        cas.verbose = 0\n        h1, E_core = cas.get_h1eff()\n        h2_cas     = cas.get_h2eff()\n        h2         = ao2mo.restore(1, h2_cas, n_act).reshape(n_act, n_act, n_act, n_act)\n        n_orb      = n_act\n\n        T_ferm = normal_ordered(build_one_electron(h1, n_orb))\n        V_ferm = normal_ordered(build_two_electron(h2, n_orb))\n        H_active = T_ferm + V_ferm\n        n_spin_orbs = 2 * n_orb\n        H_ferm = H_active + FermionOperator((), E_core)\n        T_ferm_nocore = T_ferm\n        V_ferm_nocore = V_ferm\n    else:\n        C      = mf.mo_coeff\n        n_orb  = C.shape[1]\n        n_active_e = n_elec_tot\n        E_core = mol.energy_nuc()\n        T_ao   = mol.intor(\'int1e_kin\')\n        V_ao   = mol.intor(\'int1e_nuc\')\n        T_mo   = C.T @ T_ao @ C\n        V_mo   = C.T @ V_ao @ C\n        eri_mo = ao2mo.kernel(mol, C, compact=False).reshape(n_orb, n_orb, n_orb, n_orb)\n        T_ferm = normal_ordered(build_one_electron(T_mo, n_orb) +\n                                build_one_electron(V_mo, n_orb))\n        V_ferm = normal_ordered(build_two_electron(eri_mo, n_orb))\n        H_ferm = T_ferm + V_ferm + FermionOperator((), E_core)\n        T_ferm_nocore = T_ferm\n        V_ferm_nocore = V_ferm\n\n    n_spin_orbs = 2 * n_orb\n    H_q_jw = jordan_wigner(H_ferm)\n    T_q_jw = jordan_wigner(T_ferm)\n    V_q_jw = jordan_wigner(V_ferm)\n    n_q_jw = count_qubits(H_q_jw)\n    H_jw   = get_sparse_operator(H_q_jw, n_qubits=n_q_jw).toarray()\n    T_jw   = get_sparse_operator(T_q_jw, n_qubits=n_q_jw).toarray()\n    V_jw   = get_sparse_operator(V_q_jw, n_qubits=n_q_jw).toarray()\n\n    if use_scbk:\n        from openfermion.transforms import symmetry_conserving_bravyi_kitaev\n        H_q_sc = symmetry_conserving_bravyi_kitaev(H_ferm, n_spin_orbs, n_active_e)\n        Tq_sc  = symmetry_conserving_bravyi_kitaev(T_ferm_nocore, n_spin_orbs, n_active_e)\n        Vq_sc  = symmetry_conserving_bravyi_kitaev(V_ferm_nocore, n_spin_orbs, n_active_e)\n        n_q    = count_qubits(H_q_sc)\n        H_mat  = get_sparse_operator(H_q_sc, n_qubits=n_q).toarray()\n        T_mat  = get_sparse_operator(Tq_sc,  n_qubits=n_q).toarray()\n        V_mat  = get_sparse_operator(Vq_sc,  n_qubits=n_q).toarray()\n        U_scbk = compute_scbk_isometry(H_jw, H_mat, n_active_e, n_q_jw)\n    else:\n        n_q    = n_q_jw\n        H_mat  = H_jw\n        T_mat  = T_jw\n        V_mat  = V_jw\n        U_scbk = None\n\n    return (H_mat, T_mat, V_mat, E_core, n_q, n_orb, n_active_e,\n            n_spin_orbs, n_q_jw, U_scbk, E_hf_mf, H_jw)', 'execution_count': 5}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Executing cell:
+def verify_energy(H_mat, E_core, cas_ref_energy=None):
+    evals = np.linalg.eigvalsh(H_mat)
+    E_gs  = evals[0].real
+    print(f"  Ground state energy (dari H_mat)  : {E_gs:.8f} Ha")
+    print(f"  E_core                             : {E_core:.8f} Ha")
+    print(f"  E_active (E_gs - E_core)           : {E_gs - E_core:.8f} Ha")
+    if cas_ref_energy is not None:
+        print(f"  Referensi CASCI                    : {cas_ref_energy:.8f} Ha")
+        print(f"  Selisih                            : {abs(E_gs - cas_ref_energy):.2e} Ha")
+    return E_gs
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'def verify_energy(H_mat, E_core, cas_ref_energy=None):\n    evals = np.linalg.eigvalsh(H_mat)\n    E_gs  = evals[0].real\n    print(f"  Ground state energy (dari H_mat)  : {E_gs:.8f} Ha")\n    print(f"  E_core                             : {E_core:.8f} Ha")\n    print(f"  E_active (E_gs - E_core)           : {E_gs - E_core:.8f} Ha")\n    if cas_ref_energy is not None:\n        print(f"  Referensi CASCI                    : {cas_ref_energy:.8f} Ha")\n        print(f"  Selisih                            : {abs(E_gs - cas_ref_energy):.2e} Ha")\n    return E_gs', 'execution_count': 6}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Executing cell:
+def build_hamiltonian(bond_length):
+    H, T, V, E_nuc, n_q, n_orb, _, _, _, _, _, _ = build_hamiltonian_v2(
+        MOLECULES['CH4'], bond_length=bond_length, use_scbk=USE_SCBK)
+    return H, T, V, E_nuc, n_q, n_orb
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': "def build_hamiltonian(bond_length):\n    H, T, V, E_nuc, n_q, n_orb, _, _, _, _, _, _ = build_hamiltonian_v2(\n        MOLECULES['CH4'], bond_length=bond_length, use_scbk=USE_SCBK)\n    return H, T, V, E_nuc, n_q, n_orb", 'execution_count': 7}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Skipping non-executing cell 9
+[NbConvertApp] Executing cell:
+def ry_gate(theta):
+    c, s = np.cos(theta / 2), np.sin(theta / 2)
+    return np.array([[c, -s], [s, c]], dtype=complex)
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'def ry_gate(theta):\n    c, s = np.cos(theta / 2), np.sin(theta / 2)\n    return np.array([[c, -s], [s, c]], dtype=complex)', 'execution_count': 8}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Executing cell:
+def kron_gate(gate_2x2, qubit, n_qubits):
+    ops = [np.eye(2, dtype=complex)] * n_qubits
+    ops[qubit] = gate_2x2
+    result = ops[0]
+    for op in ops[1:]:
+        result = np.kron(result, op)
+    return result
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'def kron_gate(gate_2x2, qubit, n_qubits):\n    ops = [np.eye(2, dtype=complex)] * n_qubits\n    ops[qubit] = gate_2x2\n    result = ops[0]\n    for op in ops[1:]:\n        result = np.kron(result, op)\n    return result', 'execution_count': 9}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Executing cell:
+def cnot_full(n_qubits, control, target):
+    dim = 2 ** n_qubits
+    mat = np.zeros((dim, dim), dtype=complex)
+    for j in range(dim):
+        ctrl_bit = (j >> (n_qubits - 1 - control)) & 1
+        if ctrl_bit:
+            tgt_pos = n_qubits - 1 - target
+            i = j ^ (1 << tgt_pos)
+        else:
+            i = j
+        mat[i, j] = 1.0
+    return mat
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'def cnot_full(n_qubits, control, target):\n    dim = 2 ** n_qubits\n    mat = np.zeros((dim, dim), dtype=complex)\n    for j in range(dim):\n        ctrl_bit = (j >> (n_qubits - 1 - control)) & 1\n        if ctrl_bit:\n            tgt_pos = n_qubits - 1 - target\n            i = j ^ (1 << tgt_pos)\n        else:\n            i = j\n        mat[i, j] = 1.0\n    return mat', 'execution_count': 10}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Executing cell:
+def build_linear_entangling_layer(n_qubits):
+    mat = np.eye(2 ** n_qubits, dtype=complex)
+    for q in range(n_qubits - 1):
+        mat = cnot_full(n_qubits, q, q + 1) @ mat
+    return mat
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'def build_linear_entangling_layer(n_qubits):\n    mat = np.eye(2 ** n_qubits, dtype=complex)\n    for q in range(n_qubits - 1):\n        mat = cnot_full(n_qubits, q, q + 1) @ mat\n    return mat', 'execution_count': 11}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Skipping non-executing cell 14
+[NbConvertApp] Executing cell:
+def prepare_hf_state(n_qubits, n_electrons,
+                     use_scbk=False, U_scbk=None, n_q_jw=None, H_mat=None, **kwargs):
+    '''
+    Params
+    ------
+    n_qubits    : jumlah qubit (setelah encoding, bisa < n_electrons jika SCBK)
+    n_electrons : jumlah elektron aktif
+    use_scbk    : True -> proyeksikan HF state ke ruang SCBK
+    U_scbk      : isometri SCBK (dim_jw x dim_scbk)
+    '''
+    if use_scbk and H_mat is not None:
+        dim = 2 ** n_qubits
+        diag_energies = np.array([H_mat[i, i].real for i in range(dim)])
+        hf_idx = int(np.argmin(diag_energies))
+    else:
+        hf_idx = sum(1 << (n_qubits - 1 - i) for i in range(n_electrons))
+
+    psi = np.zeros(2 ** n_qubits, dtype=complex)
+    psi[hf_idx] = 1.0
+    return psi
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': "def prepare_hf_state(n_qubits, n_electrons,\n                     use_scbk=False, U_scbk=None, n_q_jw=None, H_mat=None, **kwargs):\n    '''\n    Params\n    ------\n    n_qubits    : jumlah qubit (setelah encoding, bisa < n_electrons jika SCBK)\n    n_electrons : jumlah elektron aktif\n    use_scbk    : True -> proyeksikan HF state ke ruang SCBK\n    U_scbk      : isometri SCBK (dim_jw x dim_scbk)\n    '''\n    if use_scbk and H_mat is not None:\n        dim = 2 ** n_qubits\n        diag_energies = np.array([H_mat[i, i].real for i in range(dim)])\n        hf_idx = int(np.argmin(diag_energies))\n    else:\n        hf_idx = sum(1 << (n_qubits - 1 - i) for i in range(n_electrons))\n\n    psi = np.zeros(2 ** n_qubits, dtype=complex)\n    psi[hf_idx] = 1.0\n    return psi", 'execution_count': 12}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Skipping non-executing cell 16
+[NbConvertApp] Skipping non-executing cell 17
+[NbConvertApp] Executing cell:
+def build_single_excitation_generator(i, a, n_qubits,
+                                       use_scbk=False, U_scbk=None, n_q_jw=None,
+                                       **kwargs):
+    op       = FermionOperator(((a, 1), (i, 0))) - FermionOperator(((i, 1), (a, 0)))
+    qubit_op = jordan_wigner(op)
+    n_q_build = n_q_jw if (use_scbk and n_q_jw is not None) else n_qubits
+    G_jw = get_sparse_operator(qubit_op, n_qubits=n_q_build).toarray()
+    if use_scbk and U_scbk is not None:
+        return U_scbk.T.conj() @ G_jw @ U_scbk
+    return G_jw
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'def build_single_excitation_generator(i, a, n_qubits,\n                                       use_scbk=False, U_scbk=None, n_q_jw=None,\n                                       **kwargs):\n    op       = FermionOperator(((a, 1), (i, 0))) - FermionOperator(((i, 1), (a, 0)))\n    qubit_op = jordan_wigner(op)\n    n_q_build = n_q_jw if (use_scbk and n_q_jw is not None) else n_qubits\n    G_jw = get_sparse_operator(qubit_op, n_qubits=n_q_build).toarray()\n    if use_scbk and U_scbk is not None:\n        return U_scbk.T.conj() @ G_jw @ U_scbk\n    return G_jw', 'execution_count': 13}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Executing cell:
+def build_double_excitation_generator(i, j, a, b, n_qubits,
+                                       use_scbk=False, U_scbk=None, n_q_jw=None,
+                                       **kwargs):
+    op       = (FermionOperator(((a, 1), (b, 1), (j, 0), (i, 0))) -
+                FermionOperator(((i, 1), (j, 1), (b, 0), (a, 0))))
+    qubit_op = jordan_wigner(op)
+    n_q_build = n_q_jw if (use_scbk and n_q_jw is not None) else n_qubits
+    G_jw = get_sparse_operator(qubit_op, n_qubits=n_q_build).toarray()
+    if use_scbk and U_scbk is not None:
+        return U_scbk.T.conj() @ G_jw @ U_scbk
+    return G_jw
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'def build_double_excitation_generator(i, j, a, b, n_qubits,\n                                       use_scbk=False, U_scbk=None, n_q_jw=None,\n                                       **kwargs):\n    op       = (FermionOperator(((a, 1), (b, 1), (j, 0), (i, 0))) -\n                FermionOperator(((i, 1), (j, 1), (b, 0), (a, 0))))\n    qubit_op = jordan_wigner(op)\n    n_q_build = n_q_jw if (use_scbk and n_q_jw is not None) else n_qubits\n    G_jw = get_sparse_operator(qubit_op, n_qubits=n_q_build).toarray()\n    if use_scbk and U_scbk is not None:\n        return U_scbk.T.conj() @ G_jw @ U_scbk\n    return G_jw', 'execution_count': 14}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Executing cell:
+def get_uccsd_excitations(n_electrons, n_qubits):
+    '''
+    Enumerate semua pasangan (i->a) single dan (ij->ab) double excitation.
+    Spin orbital: 0..n_electrons-1 = occupied, n_electrons..n_qubits-1 = virtual.
+    '''
+    n_occ   = n_electrons
+    singles = [(i, a)
+               for i in range(n_occ)
+               for a in range(n_occ, n_qubits)]
+    doubles = [(i, j, a, b)
+               for i in range(n_occ)
+               for j in range(i + 1, n_occ)
+               for a in range(n_occ, n_qubits)
+               for b in range(a + 1, n_qubits)]
+    return singles, doubles
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': "def get_uccsd_excitations(n_electrons, n_qubits):\n    '''\n    Enumerate semua pasangan (i->a) single dan (ij->ab) double excitation.\n    Spin orbital: 0..n_electrons-1 = occupied, n_electrons..n_qubits-1 = virtual.\n    '''\n    n_occ   = n_electrons\n    singles = [(i, a)\n               for i in range(n_occ)\n               for a in range(n_occ, n_qubits)]\n    doubles = [(i, j, a, b)\n               for i in range(n_occ)\n               for j in range(i + 1, n_occ)\n               for a in range(n_occ, n_qubits)\n               for b in range(a + 1, n_qubits)]\n    return singles, doubles", 'execution_count': 15}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Executing cell:
+def count_uccsd_params(n_electrons, n_qubits):
+    singles, doubles = get_uccsd_excitations(n_electrons, n_qubits)
+    return len(singles) + len(doubles)
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'def count_uccsd_params(n_electrons, n_qubits):\n    singles, doubles = get_uccsd_excitations(n_electrons, n_qubits)\n    return len(singles) + len(doubles)', 'execution_count': 16}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Executing cell:
+def prepare_ansatz_uccsd(params, n_qubits, n_electrons,
+                          use_scbk=False, U_scbk=None, n_q_jw=None, H_mat=None, **kwargs):
+    '''
+    UCCSD ansatz (Trotterisasi):
+        |psi(theta)> = [prod_k e^(theta_k G_k)] |HF>
+    '''
+    sc  = dict(use_scbk=use_scbk, U_scbk=U_scbk, n_q_jw=n_q_jw, H_mat=H_mat)
+    psi = prepare_hf_state(n_qubits, n_electrons, **sc)
+    singles, doubles = get_uccsd_excitations(n_electrons, n_qubits)
+    idx = 0
+    for (i, a) in singles:
+        G   = build_single_excitation_generator(i, a, n_qubits, **sc)
+        psi = expm(params[idx] * G) @ psi
+        idx += 1
+    for (i, j, a, b) in doubles:
+        G   = build_double_excitation_generator(i, j, a, b, n_qubits, **sc)
+        psi = expm(params[idx] * G) @ psi
+        idx += 1
+    return psi
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': "def prepare_ansatz_uccsd(params, n_qubits, n_electrons,\n                          use_scbk=False, U_scbk=None, n_q_jw=None, H_mat=None, **kwargs):\n    '''\n    UCCSD ansatz (Trotterisasi):\n        |psi(theta)> = [prod_k e^(theta_k G_k)] |HF>\n    '''\n    sc  = dict(use_scbk=use_scbk, U_scbk=U_scbk, n_q_jw=n_q_jw, H_mat=H_mat)\n    psi = prepare_hf_state(n_qubits, n_electrons, **sc)\n    singles, doubles = get_uccsd_excitations(n_electrons, n_qubits)\n    idx = 0\n    for (i, a) in singles:\n        G   = build_single_excitation_generator(i, a, n_qubits, **sc)\n        psi = expm(params[idx] * G) @ psi\n        idx += 1\n    for (i, j, a, b) in doubles:\n        G   = build_double_excitation_generator(i, j, a, b, n_qubits, **sc)\n        psi = expm(params[idx] * G) @ psi\n        idx += 1\n    return psi", 'execution_count': 17}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Executing cell:
+prepare_ansatz = prepare_ansatz_uccsd
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'prepare_ansatz = prepare_ansatz_uccsd', 'execution_count': 18}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Skipping non-executing cell 24
+[NbConvertApp] Executing cell:
+def get_kupccgsd_excitations(n_orb, n_qubits):
+    # Generalized singles: semua pasangan spin-orbital (p,q), p<q
+    gen_singles = [(p, q)
+                   for p in range(n_qubits)
+                   for q in range(p + 1, n_qubits)]
+    # Paired doubles: orbital spasial p->q, keduanya doubly occupied
+    # Spin-orbital: p_alpha=2p, p_beta=2p+1, q_alpha=2q, q_beta=2q+1
+    paired_doubles = [(2 * p, 2 * p + 1, 2 * q, 2 * q + 1)
+                      for p in range(n_orb)
+                      for q in range(p + 1, n_orb)]
+    return gen_singles, paired_doubles
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'def get_kupccgsd_excitations(n_orb, n_qubits):\n    # Generalized singles: semua pasangan spin-orbital (p,q), p<q\n    gen_singles = [(p, q)\n                   for p in range(n_qubits)\n                   for q in range(p + 1, n_qubits)]\n    # Paired doubles: orbital spasial p->q, keduanya doubly occupied\n    # Spin-orbital: p_alpha=2p, p_beta=2p+1, q_alpha=2q, q_beta=2q+1\n    paired_doubles = [(2 * p, 2 * p + 1, 2 * q, 2 * q + 1)\n                      for p in range(n_orb)\n                      for q in range(p + 1, n_orb)]\n    return gen_singles, paired_doubles', 'execution_count': 19}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Executing cell:
+def count_kupccgsd_params(n_orb, n_qubits, k=1):
+    gs, pd_ = get_kupccgsd_excitations(n_orb, n_qubits)
+    return k * (len(gs) + len(pd_))
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'def count_kupccgsd_params(n_orb, n_qubits, k=1):\n    gs, pd_ = get_kupccgsd_excitations(n_orb, n_qubits)\n    return k * (len(gs) + len(pd_))', 'execution_count': 20}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Executing cell:
+def build_generators_kupccgsd(n_qubits, n_electrons, n_orb, k=1,
+                               use_scbk=False, U_scbk=None, n_q_jw=None, H_mat=None, **kwargs):
+    # Pre-compute semua generator sekali saja, simpan dalam list.
+    sc = dict(use_scbk=use_scbk, U_scbk=U_scbk, n_q_jw=n_q_jw, H_mat=H_mat)
+    gen_singles, paired_doubles = get_kupccgsd_excitations(n_orb, n_qubits)
+
+    generators = []
+    for (p, q) in gen_singles:
+        G = build_single_excitation_generator(p, q, n_qubits, **sc)
+        generators.append(G)
+    for (i, j, a, b) in paired_doubles:
+        G = build_double_excitation_generator(i, j, a, b, n_qubits, **sc)
+        generators.append(G)
+    return generators
+
+def prepare_ansatz_kupccgsd_cached(params, n_qubits, n_electrons, n_orb=None, k=1,
+                                    generators=None,
+                                    use_scbk=False, U_scbk=None, n_q_jw=None, H_mat=None, **kwargs):
+    # Versi cached: generator tidak dibangun ulang tiap evaluasi.
+    if n_orb is None:
+        n_orb = n_qubits // 2
+    sc  = dict(use_scbk=use_scbk, U_scbk=U_scbk, n_q_jw=n_q_jw, H_mat=H_mat)
+    psi = prepare_hf_state(n_qubits, n_electrons, **sc)
+
+    n_per_layer = len(generators)
+    for layer in range(k):
+        idx = layer * n_per_layer
+        for G in generators:
+            psi = expm(params[idx] * G) @ psi
+            idx += 1
+    return psi
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'def build_generators_kupccgsd(n_qubits, n_electrons, n_orb, k=1,\n                               use_scbk=False, U_scbk=None, n_q_jw=None, H_mat=None, **kwargs):\n    # Pre-compute semua generator sekali saja, simpan dalam list.\n    sc = dict(use_scbk=use_scbk, U_scbk=U_scbk, n_q_jw=n_q_jw, H_mat=H_mat)\n    gen_singles, paired_doubles = get_kupccgsd_excitations(n_orb, n_qubits)\n\n    generators = []\n    for (p, q) in gen_singles:\n        G = build_single_excitation_generator(p, q, n_qubits, **sc)\n        generators.append(G)\n    for (i, j, a, b) in paired_doubles:\n        G = build_double_excitation_generator(i, j, a, b, n_qubits, **sc)\n        generators.append(G)\n    return generators\n\ndef prepare_ansatz_kupccgsd_cached(params, n_qubits, n_electrons, n_orb=None, k=1,\n                                    generators=None,\n                                    use_scbk=False, U_scbk=None, n_q_jw=None, H_mat=None, **kwargs):\n    # Versi cached: generator tidak dibangun ulang tiap evaluasi.\n    if n_orb is None:\n        n_orb = n_qubits // 2\n    sc  = dict(use_scbk=use_scbk, U_scbk=U_scbk, n_q_jw=n_q_jw, H_mat=H_mat)\n    psi = prepare_hf_state(n_qubits, n_electrons, **sc)\n\n    n_per_layer = len(generators)\n    for layer in range(k):\n        idx = layer * n_per_layer\n        for G in generators:\n            psi = expm(params[idx] * G) @ psi\n            idx += 1\n    return psi', 'execution_count': 21}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Executing cell:
+def prepare_ansatz_kupccgsd(params, n_qubits, n_electrons, n_orb=None, k=1,
+                             use_scbk=False, U_scbk=None, n_q_jw=None, H_mat=None, **kwargs):
+    # Mode on-the-fly: tidak cache generator (hemat memori, lebih lambat).
+    if n_orb is None:
+        n_orb = n_qubits // 2
+    sc  = dict(use_scbk=use_scbk, U_scbk=U_scbk, n_q_jw=n_q_jw, H_mat=H_mat)
+    psi = prepare_hf_state(n_qubits, n_electrons, **sc)
+    gen_singles, paired_doubles = get_kupccgsd_excitations(n_orb, n_qubits)
+    n_per_layer = len(gen_singles) + len(paired_doubles)
+    for layer in range(k):
+        idx = layer * n_per_layer
+        for (p, q) in gen_singles:
+            G   = build_single_excitation_generator(p, q, n_qubits, **sc)
+            psi = expm(params[idx] * G) @ psi
+            idx += 1
+        for (i, j, a, b) in paired_doubles:
+            G   = build_double_excitation_generator(i, j, a, b, n_qubits, **sc)
+            psi = expm(params[idx] * G) @ psi
+            idx += 1
+    return psi
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'def prepare_ansatz_kupccgsd(params, n_qubits, n_electrons, n_orb=None, k=1,\n                             use_scbk=False, U_scbk=None, n_q_jw=None, H_mat=None, **kwargs):\n    # Mode on-the-fly: tidak cache generator (hemat memori, lebih lambat).\n    if n_orb is None:\n        n_orb = n_qubits // 2\n    sc  = dict(use_scbk=use_scbk, U_scbk=U_scbk, n_q_jw=n_q_jw, H_mat=H_mat)\n    psi = prepare_hf_state(n_qubits, n_electrons, **sc)\n    gen_singles, paired_doubles = get_kupccgsd_excitations(n_orb, n_qubits)\n    n_per_layer = len(gen_singles) + len(paired_doubles)\n    for layer in range(k):\n        idx = layer * n_per_layer\n        for (p, q) in gen_singles:\n            G   = build_single_excitation_generator(p, q, n_qubits, **sc)\n            psi = expm(params[idx] * G) @ psi\n            idx += 1\n        for (i, j, a, b) in paired_doubles:\n            G   = build_double_excitation_generator(i, j, a, b, n_qubits, **sc)\n            psi = expm(params[idx] * G) @ psi\n            idx += 1\n    return psi', 'execution_count': 22}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Skipping non-executing cell 29
+[NbConvertApp] Executing cell:
+def expect_value(psi, H_mat):
+    return float(np.real(psi.conj() @ H_mat @ psi))
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'def expect_value(psi, H_mat):\n    return float(np.real(psi.conj() @ H_mat @ psi))', 'execution_count': 23}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Executing cell:
+def optimizer_cl(params, H_mat, n_qubits, n_electrons, history, ansatz_fn, ansatz_kwargs):
+    psi = ansatz_fn(params, n_qubits, n_electrons, **ansatz_kwargs)
+    E   = expect_value(psi, H_mat)
+    history.append(E)
+    return E
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'def optimizer_cl(params, H_mat, n_qubits, n_electrons, history, ansatz_fn, ansatz_kwargs):\n    psi = ansatz_fn(params, n_qubits, n_electrons, **ansatz_kwargs)\n    E   = expect_value(psi, H_mat)\n    history.append(E)\n    return E', 'execution_count': 24}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Executing cell:
+def run_vqe_v2(H_mat, n_qubits, n_electrons, n_orb=None,
+               ansatz_type='k-UpCCGSD', k=1,
+               use_scbk=False, U_scbk=None, n_q_jw=None,
+               n_spin_orbs=None, E_core=0.0, E_hf_ref=None,
+               method='COBYLA', n_restarts=5, seed=42, verbose=False):
+    '''
+    Jalankan VQE: minimasi E(theta) = <psi(theta)|H|psi(theta)> dengan optimizer klasik.
+
+    Catatan untuk CH4 CAS(8,8) / 14 qubit SCBK:
+      Ukuran Hilbert space: 2^14 = 16384
+      Memori generator per layer: ~510 GB -> mode ON-THE-FLY (tidak di-cache).
+      Gunakan method='L-BFGS-B' untuk konvergensi terbaik.
+    '''
+    if n_orb is None:
+        n_orb = n_qubits // 2
+    rng = np.random.RandomState(seed)
+
+    ansatz_base_kwargs = dict(
+        use_scbk=use_scbk, U_scbk=U_scbk, n_q_jw=n_q_jw, H_mat=H_mat,
+    )
+
+    if ansatz_type == 'UCCSD':
+        ansatz_fn     = prepare_ansatz_uccsd
+        n_params      = count_uccsd_params(n_electrons,
+                            n_q_jw if (use_scbk and n_q_jw) else n_qubits)
+        ansatz_kwargs = ansatz_base_kwargs
+    else:   # k-UpCCGSD
+        n_params = count_kupccgsd_params(n_orb, n_qubits, k=k)
+
+        # ─── Auto memory check untuk generator caching ────────────────
+        _gs, _pd  = get_kupccgsd_excitations(n_orb, n_qubits)
+        n_gen     = len(_gs) + len(_pd)
+        est_gb    = n_gen * (2**n_qubits)**2 * 16 / 1e9  # complex128
+
+        if est_gb < 32.0:   # Cache jika estimasi < 32 GB (tuning sesuai node)
+            print(f"  Pre-computing {n_gen} generators ({est_gb:.3f} GB)...", end=' ')
+            t0 = time.time()
+            generators_cache = build_generators_kupccgsd(
+                n_qubits, n_electrons, n_orb, k=1, **ansatz_base_kwargs
+            )
+            print(f"done ({time.time()-t0:.2f}s)")
+            ansatz_fn     = prepare_ansatz_kupccgsd_cached
+            ansatz_kwargs = {**ansatz_base_kwargs, 'n_orb': n_orb, 'k': k,
+                             'generators': generators_cache}
+        else:
+            # On-the-fly mode: bangun generator tiap evaluasi, hemat memori
+            print(f"  Generator cache: {est_gb:.1f} GB > 32 GB -> mode on-the-fly.")
+            ansatz_fn     = prepare_ansatz_kupccgsd
+            ansatz_kwargs = {**ansatz_base_kwargs, 'n_orb': n_orb, 'k': k}
+
+    best = {'E_vqe': np.inf, 'energy_history': [], 'n_iters': 0}
+
+    opts_map = {
+        'COBYLA'  : {'maxiter': 10000, 'rhobeg': 0.5},
+        'BFGS'    : {'maxiter': 1000,  'gtol'  : 1e-8},
+        'L-BFGS-B': {'maxiter': 500,   'ftol'  : 1e-9},
+    }
+    opts = opts_map.get(method, {'maxiter': 2000})
+
+    for trial in range(n_restarts):
+        history = []
+        theta0  = (rng.uniform(-0.1, 0.1, n_params) if trial < max(n_restarts // 2, 1)
+                   else rng.uniform(-np.pi, np.pi, n_params))
+
+        res = minimize(
+            optimizer_cl,
+            theta0,
+            args=(H_mat, n_qubits, n_electrons, history, ansatz_fn, ansatz_kwargs),
+            method=method,
+            options=opts,
+        )
+
+        if verbose:
+            print(f"  Restart {trial+1}/{n_restarts}: "
+                  f"E = {res.fun:.6f} Ha | {len(history):4d} iter | "
+                  f"success={res.success}")
+
+        if res.fun < best['E_vqe']:
+            best = {
+                'E_vqe'         : res.fun,
+                'optimal_params': res.x.copy(),
+                'energy_history': history.copy(),
+                'n_iters'       : len(history),
+                'trial'         : trial + 1,
+                'success'       : res.success,
+            }
+
+    best['ansatz_type'] = ansatz_type
+    best['n_params']    = n_params
+    return best
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'def run_vqe_v2(H_mat, n_qubits, n_electrons, n_orb=None,\n               ansatz_type=\'k-UpCCGSD\', k=1,\n               use_scbk=False, U_scbk=None, n_q_jw=None,\n               n_spin_orbs=None, E_core=0.0, E_hf_ref=None,\n               method=\'COBYLA\', n_restarts=5, seed=42, verbose=False):\n    \'\'\'\n    Jalankan VQE: minimasi E(theta) = <psi(theta)|H|psi(theta)> dengan optimizer klasik.\n\n    Catatan untuk CH4 CAS(8,8) / 14 qubit SCBK:\n      Ukuran Hilbert space: 2^14 = 16384\n      Memori generator per layer: ~510 GB -> mode ON-THE-FLY (tidak di-cache).\n      Gunakan method=\'L-BFGS-B\' untuk konvergensi terbaik.\n    \'\'\'\n    if n_orb is None:\n        n_orb = n_qubits // 2\n    rng = np.random.RandomState(seed)\n\n    ansatz_base_kwargs = dict(\n        use_scbk=use_scbk, U_scbk=U_scbk, n_q_jw=n_q_jw, H_mat=H_mat,\n    )\n\n    if ansatz_type == \'UCCSD\':\n        ansatz_fn     = prepare_ansatz_uccsd\n        n_params      = count_uccsd_params(n_electrons,\n                            n_q_jw if (use_scbk and n_q_jw) else n_qubits)\n        ansatz_kwargs = ansatz_base_kwargs\n    else:   # k-UpCCGSD\n        n_params = count_kupccgsd_params(n_orb, n_qubits, k=k)\n\n        # ─── Auto memory check untuk generator caching ────────────────\n        _gs, _pd  = get_kupccgsd_excitations(n_orb, n_qubits)\n        n_gen     = len(_gs) + len(_pd)\n        est_gb    = n_gen * (2**n_qubits)**2 * 16 / 1e9  # complex128\n\n        if est_gb < 32.0:   # Cache jika estimasi < 32 GB (tuning sesuai node)\n            print(f"  Pre-computing {n_gen} generators ({est_gb:.3f} GB)...", end=\' \')\n            t0 = time.time()\n            generators_cache = build_generators_kupccgsd(\n                n_qubits, n_electrons, n_orb, k=1, **ansatz_base_kwargs\n            )\n            print(f"done ({time.time()-t0:.2f}s)")\n            ansatz_fn     = prepare_ansatz_kupccgsd_cached\n            ansatz_kwargs = {**ansatz_base_kwargs, \'n_orb\': n_orb, \'k\': k,\n                             \'generators\': generators_cache}\n        else:\n            # On-the-fly mode: bangun generator tiap evaluasi, hemat memori\n            print(f"  Generator cache: {est_gb:.1f} GB > 32 GB -> mode on-the-fly.")\n            ansatz_fn     = prepare_ansatz_kupccgsd\n            ansatz_kwargs = {**ansatz_base_kwargs, \'n_orb\': n_orb, \'k\': k}\n\n    best = {\'E_vqe\': np.inf, \'energy_history\': [], \'n_iters\': 0}\n\n    opts_map = {\n        \'COBYLA\'  : {\'maxiter\': 10000, \'rhobeg\': 0.5},\n        \'BFGS\'    : {\'maxiter\': 1000,  \'gtol\'  : 1e-8},\n        \'L-BFGS-B\': {\'maxiter\': 500,   \'ftol\'  : 1e-9},\n    }\n    opts = opts_map.get(method, {\'maxiter\': 2000})\n\n    for trial in range(n_restarts):\n        history = []\n        theta0  = (rng.uniform(-0.1, 0.1, n_params) if trial < max(n_restarts // 2, 1)\n                   else rng.uniform(-np.pi, np.pi, n_params))\n\n        res = minimize(\n            optimizer_cl,\n            theta0,\n            args=(H_mat, n_qubits, n_electrons, history, ansatz_fn, ansatz_kwargs),\n            method=method,\n            options=opts,\n        )\n\n        if verbose:\n            print(f"  Restart {trial+1}/{n_restarts}: "\n                  f"E = {res.fun:.6f} Ha | {len(history):4d} iter | "\n                  f"success={res.success}")\n\n        if res.fun < best[\'E_vqe\']:\n            best = {\n                \'E_vqe\'         : res.fun,\n                \'optimal_params\': res.x.copy(),\n                \'energy_history\': history.copy(),\n                \'n_iters\'       : len(history),\n                \'trial\'         : trial + 1,\n                \'success\'       : res.success,\n            }\n\n    best[\'ansatz_type\'] = ansatz_type\n    best[\'n_params\']    = n_params\n    return best', 'execution_count': 25}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Skipping non-executing cell 33
+[NbConvertApp] Executing cell:
+def get_mp2_initial_params(mol_cfg, bond_length, n_electrons, n_qubits):
+    '''
+    Warm start: gunakan amplitudo MP2 sebagai inisialisasi theta_0.
+    Hanya untuk UCCSD ansatz.
+    '''
+    mol = gto.Mole()
+    mol.atom   = mol_cfg['atom'](bond_length)
+    mol.basis  = mol_cfg['basis']
+    mol.charge = mol_cfg['charge']
+    mol.spin   = mol_cfg['spin']
+    mol.verbose = 0
+    mol.build()
+
+    mf = scf.RHF(mol).run()
+    from pyscf import mp
+    mp2 = mp.MP2(mf).run()
+    t2 = mp2.t2   # shape: (nocc, nocc, nvir, nvir)
+    nocc = t2.shape[0]
+    nvir = t2.shape[2]
+    doubles_flat = t2.reshape(-1)
+    singles_init = np.zeros(nocc * nvir)
+    params0 = np.concatenate([singles_init, doubles_flat])
+    n_params = count_uccsd_params(n_electrons, n_qubits)
+    if len(params0) >= n_params:
+        return params0[:n_params]
+    return np.pad(params0, (0, n_params - len(params0)))
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': "def get_mp2_initial_params(mol_cfg, bond_length, n_electrons, n_qubits):\n    '''\n    Warm start: gunakan amplitudo MP2 sebagai inisialisasi theta_0.\n    Hanya untuk UCCSD ansatz.\n    '''\n    mol = gto.Mole()\n    mol.atom   = mol_cfg['atom'](bond_length)\n    mol.basis  = mol_cfg['basis']\n    mol.charge = mol_cfg['charge']\n    mol.spin   = mol_cfg['spin']\n    mol.verbose = 0\n    mol.build()\n\n    mf = scf.RHF(mol).run()\n    from pyscf import mp\n    mp2 = mp.MP2(mf).run()\n    t2 = mp2.t2   # shape: (nocc, nocc, nvir, nvir)\n    nocc = t2.shape[0]\n    nvir = t2.shape[2]\n    doubles_flat = t2.reshape(-1)\n    singles_init = np.zeros(nocc * nvir)\n    params0 = np.concatenate([singles_init, doubles_flat])\n    n_params = count_uccsd_params(n_electrons, n_qubits)\n    if len(params0) >= n_params:\n        return params0[:n_params]\n    return np.pad(params0, (0, n_params - len(params0)))", 'execution_count': 26}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Skipping non-executing cell 35
+[NbConvertApp] Executing cell:
+mol_cfg = MOLECULES[ACTIVE_MOLECULE]
+print("=" * 70)
+print(f"  VQE Upgrade - {ACTIVE_MOLECULE}")
+print(f"  {mol_cfg['description']}")
+print(f"  Ansatz  : {ANSATZ_TYPE}  (k={K_LAYERS})")
+print(f"  Encoding: {'SCBK (-2 qubit)' if USE_SCBK else 'Jordan-Wigner'}")
+print("=" * 70)
+
+n_orb_info = mol_cfg['n_active_orbs']
+n_q_info   = n_orb_info * 2
+n_active_e = mol_cfg['n_electrons'] - 2 * mol_cfg['n_frozen_core']
+
+if USE_SCBK:
+    n_q_info -= 2
+
+if ANSATZ_TYPE == 'UCCSD':
+    n_p = count_uccsd_params(n_active_e, n_q_info)
+else:
+    n_p = count_kupccgsd_params(n_orb_info, n_q_info, k=K_LAYERS)
+
+# Estimasi memori generator cache
+_gs_info, _pd_info  = get_kupccgsd_excitations(n_orb_info, n_q_info)
+n_gen_info          = len(_gs_info) + len(_pd_info)
+est_gen_gb          = n_gen_info * (2**n_q_info)**2 * 16 / 1e9
+
+print(f"\n  Perkiraan sumber daya:")
+print(f"    Orbital aktif   : {n_orb_info}")
+print(f"    Elektron aktif  : {n_active_e}")
+print(f"    Qubit           : {n_q_info}")
+print(f"    Dim Hilbert     : {2**n_q_info} x {2**n_q_info}")
+print(f"    Jumlah param    : {n_p}")
+print(f"\n  Estimasi memori generator ({n_gen_info} generator per layer):")
+print(f"    Total           : ~{est_gen_gb:.1f} GB (complex128)")
+cache_mode = 'CACHE (fast eval)' if est_gen_gb < 32 else 'ON-THE-FLY (hemat memori)'
+print(f"    Mode            : {cache_mode}")
+
+if ANSATZ_TYPE == 'k-UpCCGSD':
+    n_p_uccsd = count_uccsd_params(n_active_e, n_q_info)
+    print(f"\n  Perbandingan parameter ansatz:")
+    print(f"    UCCSD          : {n_p_uccsd} params")
+    print(f"    k-UpCCGSD k={K_LAYERS} : {n_p} params  ({n_p_uccsd/max(n_p,1):.1f}x lebih sedikit)")
+    print(f"    Gen singles    : {len(_gs_info)}  |  Paired doubles: {len(_pd_info)}")
+
+print()
+# Estimasi waktu komputasi per titik PES (rough estimate)
+n_params_est = n_p
+print(f"  Estimasi kasar waktu per titik PES (L-BFGS-B):")
+print(f"    Asumsi ~10s per evaluasi ansatz (on-the-fly, 14 qubit)")
+print(f"    1 iter L-BFGS-B (grad): {(n_params_est+1)*10:.0f} s")
+print(f"    500 iter x 3 restart  : {500*(n_params_est+1)*10*3/3600:.1f} jam")
+print(f"    => Checkpoint SLURM sangat dibutuhkan!")
+
+# Konfigurasi Global (backward-compat)
+N_QUBITS    = 4
+N_ELECTRONS = 2
+N_PARAMS    = count_uccsd_params(N_ELECTRONS, N_QUBITS)
+print(f"\nKonfigurasi UCCSD referensi (H2, 4 qubit):")
+print(f"  n_params = {N_PARAMS}")
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'mol_cfg = MOLECULES[ACTIVE_MOLECULE]\nprint("=" * 70)\nprint(f"  VQE Upgrade - {ACTIVE_MOLECULE}")\nprint(f"  {mol_cfg[\'description\']}")\nprint(f"  Ansatz  : {ANSATZ_TYPE}  (k={K_LAYERS})")\nprint(f"  Encoding: {\'SCBK (-2 qubit)\' if USE_SCBK else \'Jordan-Wigner\'}")\nprint("=" * 70)\n\nn_orb_info = mol_cfg[\'n_active_orbs\']\nn_q_info   = n_orb_info * 2\nn_active_e = mol_cfg[\'n_electrons\'] - 2 * mol_cfg[\'n_frozen_core\']\n\nif USE_SCBK:\n    n_q_info -= 2\n\nif ANSATZ_TYPE == \'UCCSD\':\n    n_p = count_uccsd_params(n_active_e, n_q_info)\nelse:\n    n_p = count_kupccgsd_params(n_orb_info, n_q_info, k=K_LAYERS)\n\n# Estimasi memori generator cache\n_gs_info, _pd_info  = get_kupccgsd_excitations(n_orb_info, n_q_info)\nn_gen_info          = len(_gs_info) + len(_pd_info)\nest_gen_gb          = n_gen_info * (2**n_q_info)**2 * 16 / 1e9\n\nprint(f"\\n  Perkiraan sumber daya:")\nprint(f"    Orbital aktif   : {n_orb_info}")\nprint(f"    Elektron aktif  : {n_active_e}")\nprint(f"    Qubit           : {n_q_info}")\nprint(f"    Dim Hilbert     : {2**n_q_info} x {2**n_q_info}")\nprint(f"    Jumlah param    : {n_p}")\nprint(f"\\n  Estimasi memori generator ({n_gen_info} generator per layer):")\nprint(f"    Total           : ~{est_gen_gb:.1f} GB (complex128)")\ncache_mode = \'CACHE (fast eval)\' if est_gen_gb < 32 else \'ON-THE-FLY (hemat memori)\'\nprint(f"    Mode            : {cache_mode}")\n\nif ANSATZ_TYPE == \'k-UpCCGSD\':\n    n_p_uccsd = count_uccsd_params(n_active_e, n_q_info)\n    print(f"\\n  Perbandingan parameter ansatz:")\n    print(f"    UCCSD          : {n_p_uccsd} params")\n    print(f"    k-UpCCGSD k={K_LAYERS} : {n_p} params  ({n_p_uccsd/max(n_p,1):.1f}x lebih sedikit)")\n    print(f"    Gen singles    : {len(_gs_info)}  |  Paired doubles: {len(_pd_info)}")\n\nprint()\n# Estimasi waktu komputasi per titik PES (rough estimate)\nn_params_est = n_p\nprint(f"  Estimasi kasar waktu per titik PES (L-BFGS-B):")\nprint(f"    Asumsi ~10s per evaluasi ansatz (on-the-fly, 14 qubit)")\nprint(f"    1 iter L-BFGS-B (grad): {(n_params_est+1)*10:.0f} s")\nprint(f"    500 iter x 3 restart  : {500*(n_params_est+1)*10*3/3600:.1f} jam")\nprint(f"    => Checkpoint SLURM sangat dibutuhkan!")\n\n# Konfigurasi Global (backward-compat)\nN_QUBITS    = 4\nN_ELECTRONS = 2\nN_PARAMS    = count_uccsd_params(N_ELECTRONS, N_QUBITS)\nprint(f"\\nKonfigurasi UCCSD referensi (H2, 4 qubit):")\nprint(f"  n_params = {N_PARAMS}")', 'execution_count': 27}
+[NbConvertApp] msg_type: stream
+[NbConvertApp] content: {'name': 'stdout', 'text': '======================================================================\n  VQE Upgrade - CH4\n  Molekul metan CH4, basis STO-3G, active space CAS(8e,8o)\n  Ansatz  : k-UpCCGSD  (k=2)\n  Encoding: SCBK (-2 qubit)\n======================================================================\n\n  Perkiraan sumber daya:\n    Orbital aktif   : 8\n    Elektron aktif  : 8\n    Qubit           : 14\n    Dim Hilbert     : 16384 x 16384\n    Jumlah param    : 238\n\n  Estimasi memori generator (119 generator per layer):\n    Total           : ~511.1 GB (complex128)\n    Mode            : ON-THE-FLY (hemat memori)\n\n  Perbandingan parameter ansatz:\n    UCCSD          : 468 params\n    k-UpCCGSD k=2 : 238 params  (2.0x lebih sedikit)\n    Gen singles    : 91  |  Paired doubles: 28\n\n  Estimasi kasar waktu per titik PES (L-BFGS-B):\n    Asumsi ~10s per evaluasi ansatz (on-the-fly, 14 qubit)\n    1 iter L-BFGS-B (grad): 2390 s\n    500 iter x 3 restart  : 995.8 jam\n    => Checkpoint SLURM sangat dibutuhkan!\n\nKonfigurasi UCCSD referensi (H2, 4 qubit):\n  n_params = 5\n'}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Skipping non-executing cell 37
+[NbConvertApp] Executing cell:
+R_DEMO = 1.085   # Angstrom - panjang ikatan C-H ekuilibrium CH4 (STO-3G)
+print(f"\n  VQE Demo: CH4, R_CH = {R_DEMO} Angstrom, Basis STO-3G")
+print(f"  Active space: CAS({MOLECULES['CH4']['n_electrons'] - 2*MOLECULES['CH4']['n_frozen_core']}e,"
+      f"{MOLECULES['CH4']['n_active_orbs']}o), frozen core = {MOLECULES['CH4']['n_frozen_core']}")
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': 'R_DEMO = 1.085   # Angstrom - panjang ikatan C-H ekuilibrium CH4 (STO-3G)\nprint(f"\\n  VQE Demo: CH4, R_CH = {R_DEMO} Angstrom, Basis STO-3G")\nprint(f"  Active space: CAS({MOLECULES[\'CH4\'][\'n_electrons\'] - 2*MOLECULES[\'CH4\'][\'n_frozen_core\']}e,"\n      f"{MOLECULES[\'CH4\'][\'n_active_orbs\']}o), frozen core = {MOLECULES[\'CH4\'][\'n_frozen_core\']}")', 'execution_count': 28}
+[NbConvertApp] msg_type: stream
+[NbConvertApp] content: {'name': 'stdout', 'text': '\n  VQE Demo: CH4, R_CH = 1.085 Angstrom, Basis STO-3G\n  Active space: CAS(8e,8o), frozen core = 1\n'}
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'idle'}
+[NbConvertApp] Executing cell:
+# Build Hamiltonian CH4 pada ekuilibrium
+H_demo, T_demo, V_demo, E_core_d, n_q_d, n_orb_d, n_ae_d, \
+    n_spin_orbs_d, n_q_jw_d, U_scbk_d, E_hf_mf_d, H_jw_ref = \
+    build_hamiltonian_v2(mol_cfg, bond_length=R_DEMO, use_scbk=USE_SCBK)
+
+sc_kw = dict(use_scbk=USE_SCBK, U_scbk=U_scbk_d, n_q_jw=n_q_jw_d)
+[NbConvertApp] msg_type: status
+[NbConvertApp] content: {'execution_state': 'busy'}
+[NbConvertApp] msg_type: execute_input
+[NbConvertApp] content: {'code': '# Build Hamiltonian CH4 pada ekuilibrium\nH_demo, T_demo, V_demo, E_core_d, n_q_d, n_orb_d, n_ae_d, \\\n    n_spin_orbs_d, n_q_jw_d, U_scbk_d, E_hf_mf_d, H_jw_ref = \\\n    build_hamiltonian_v2(mol_cfg, bond_length=R_DEMO, use_scbk=USE_SCBK)\n\nsc_kw = dict(use_scbk=USE_SCBK, U_scbk=U_scbk_d, n_q_jw=n_q_jw_d)', 'execution_count': 29}
+[NbConvertApp] ERROR | Kernel died while waiting for execute reply.
+Traceback (most recent call last):
+  File "/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/bin/jupyter-nbconvert", line 6, in <module>
+    sys.exit(main())
+  File "/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/lib/python3.10/site-packages/jupyter_core/application.py", line 284, in launch_instance
+    super().launch_instance(argv=argv, **kwargs)
+  File "/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/lib/python3.10/site-packages/traitlets/config/application.py", line 1075, in launch_instance
+    app.start()
+  File "/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/lib/python3.10/site-packages/nbconvert/nbconvertapp.py", line 420, in start
+    self.convert_notebooks()
+  File "/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/lib/python3.10/site-packages/nbconvert/nbconvertapp.py", line 597, in convert_notebooks
+    self.convert_single_notebook(notebook_filename)
+  File "/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/lib/python3.10/site-packages/nbconvert/nbconvertapp.py", line 563, in convert_single_notebook
+    output, resources = self.export_single_notebook(
+  File "/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/lib/python3.10/site-packages/nbconvert/nbconvertapp.py", line 487, in export_single_notebook
+    output, resources = self.exporter.from_filename(
+  File "/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/lib/python3.10/site-packages/nbconvert/exporters/exporter.py", line 201, in from_filename
+    return self.from_file(f, resources=resources, **kw)
+  File "/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/lib/python3.10/site-packages/nbconvert/exporters/exporter.py", line 220, in from_file
+    return self.from_notebook_node(
+  File "/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/lib/python3.10/site-packages/nbconvert/exporters/notebook.py", line 36, in from_notebook_node
+    nb_copy, resources = super().from_notebook_node(nb, resources, **kw)
+  File "/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/lib/python3.10/site-packages/nbconvert/exporters/exporter.py", line 154, in from_notebook_node
+    nb_copy, resources = self._preprocess(nb_copy, resources)
+  File "/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/lib/python3.10/site-packages/nbconvert/exporters/exporter.py", line 353, in _preprocess
+    nbc, resc = preprocessor(nbc, resc)
+  File "/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/lib/python3.10/site-packages/nbconvert/preprocessors/base.py", line 48, in __call__
+    return self.preprocess(nb, resources)
+  File "/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/lib/python3.10/site-packages/nbconvert/preprocessors/execute.py", line 103, in preprocess
+    self.preprocess_cell(cell, resources, index)
+  File "/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/lib/python3.10/site-packages/nbconvert/preprocessors/execute.py", line 124, in preprocess_cell
+    cell = self.execute_cell(cell, index, store_history=True)
+  File "/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/lib/python3.10/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+  File "/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/lib/python3.10/asyncio/base_events.py", line 649, in run_until_complete
+    return future.result()
+  File "/mgpfs/home/mkhairiansyah/.conda/envs/env-ml/lib/python3.10/site-packages/nbclient/client.py", line 1009, in async_execute_cell
+    raise DeadKernelError("Kernel died") from None
+nbclient.exceptions.DeadKernelError: Kernel died

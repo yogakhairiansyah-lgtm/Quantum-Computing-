@@ -1,0 +1,22 @@
+Bond Length (Å),VQE Energy (Ha),FCI Energy (Ha),Error (Ha),Error (mHa),Runtime (s),Evals,Molecule,Basis,Ansatz,Mapper,Optimizer,Freeze Core,Active Space,Scan Type
+0.5,-73.13372519,-73.13755703,0.00383184,3.831841,13.346,131,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch
+0.6,-74.13955787,-74.14610166,0.00654379,6.543788,8.077,79,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch
+0.7,-74.63348612,-74.6435863,0.01010018,10.100181,8.062,79,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch
+0.8,-74.86822407,-74.88290289,0.01467882,14.678818,10.735,105,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch
+0.9,-74.96715425,-74.98760117,0.02044692,20.446919,14.131,129,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch
+1.0,-74.99233152,-75.01977008,0.02743856,27.438565,15.598,155,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch
+1.1,-74.9769825,-75.012547,0.03556451,35.564507,15.731,155,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch
+1.2,-74.94035093,-74.9850562,0.04470527,44.705275,15.634,153,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch
+1.3,-74.89391256,-74.94871721,0.05480466,54.804657,15.838,155,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch
+1.4,-74.8443283,-74.91021773,0.06588943,65.889428,22.929,228,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch
+1.5,-74.79538676,-74.87339074,0.07800398,78.003979,18.191,179,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch
+1.6,-74.74937415,-74.84045825,0.0910841,91.0841,22.85,227,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch
+1.7,-74.70785101,-74.81267617,0.10482516,104.825163,18.148,178,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch
+1.8,-74.67189712,-74.79054856,0.11865144,118.651443,17.936,178,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch
+1.9,-74.74764187,-74.77389225,0.02625038,26.250379,58.502,580,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch
+2.0,-74.70156931,-74.76197635,0.06040704,60.407042,40.371,400,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch
+2.1,-74.74194323,-74.75378221,0.01183898,11.838976,45.586,451,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch
+2.2,-74.74049411,-74.74828448,0.00779037,7.790373,22.999,227,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch
+2.3,-74.73952084,-74.74463374,0.0051129,5.112898,25.668,253,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch
+2.4,-74.73884748,-74.74221008,0.0033626,3.362601,10.373,102,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch
+2.5,-74.69130251,-74.7405945,0.049292,49.291995,126.256,1256,H2O,sto-3g,k-upccgsd,parity,slsqp,True,False,single_ch

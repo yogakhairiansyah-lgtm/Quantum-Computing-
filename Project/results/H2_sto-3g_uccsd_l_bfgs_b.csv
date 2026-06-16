@@ -1,0 +1,3 @@
+Molecule,Basis,Freeze Core,Active Space,Active Electrons,Active Orbitals,Mapper,Ansatz,Optimizer,Initial Point,Noise Mode,Final Energy (Ha),Reference Energy (Ha),Error (Ha),Error (mHa),Runtime (s),Iterations,Parameters,Circuit Depth,CNOT Count,Alpha Electrons,Beta Electrons,Spatial Orbitals,Num Qubits
+H2,sto-3g,True,False,8,8,jordan-wigner,uccsd,l_bfgs_b,hf,Noiseless,-1.85727503,-1.85727503,1.2434497875801753e-14,0.0,1.643,35,6,7,0,1,1,2,4
+H2,sto-3g,True,False,8,8,jordan-wigner,uccsd,l_bfgs_b,hf,Noiseless,-1.85727503,-1.85727503,8.43769498715119e-15,0.0,1.643,35,6,7,0,1,1,2,4
